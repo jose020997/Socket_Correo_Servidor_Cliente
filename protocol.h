@@ -8,6 +8,7 @@
 #define MAIL "mail from:"
 #define SD  "quit"
 
+//lo quitaremos despues
 #define SC "USER"  
 #define PW "PASS"  
 #define ECHO "ECHO"

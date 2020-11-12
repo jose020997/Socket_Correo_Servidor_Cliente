@@ -25,7 +25,7 @@
 #include "protocol.h"	//Declarar constantes y funciones de la práctica
 
 #pragma comment(lib, "Ws2_32.lib")//Inserta en la vinculación (linking) la biblioteca Ws2_32.lib
-
+//probamos 
 
 int main(int* argc, char* argv[])
 {
@@ -100,7 +100,7 @@ int main(int* argc, char* argv[])
 				server_in4.sin_family = AF_INET;
 				server_in4.sin_port = htons(TCP_SERVICE_PORT);
 				inet_pton(ipversion, ipdest, &server_in4.sin_addr.s_addr);
-				server_in = (struct sockaddr*) & server_in4;
+				server_in = (struct sockaddr*)&server_in4;
 				address_size = sizeof(server_in4);
 			}
 
@@ -109,7 +109,7 @@ int main(int* argc, char* argv[])
 				server_in6.sin6_family = AF_INET6;
 				server_in6.sin6_port = htons(TCP_SERVICE_PORT);
 				inet_pton(ipversion, ipdest, &server_in6.sin6_addr);
-				server_in = (struct sockaddr*) & server_in6;
+				server_in = (struct sockaddr*)&server_in6;
 				address_size = sizeof(server_in6);
 			}
 
