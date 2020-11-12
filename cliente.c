@@ -114,7 +114,7 @@ int main(int* argc, char* argv[])
 			}
 
 			//Cada nueva conexión establece el estado incial en
-			estado = S_INIT;
+			estado = S_HELO;
 
 			if (connect(sockfd, server_in, address_size) == 0) {
 				printf("CLIENTE> CONEXION ESTABLECIDA CON %s:%d\r\n", ipdest, TCP_SERVICE_PORT);
@@ -122,10 +122,10 @@ int main(int* argc, char* argv[])
 				//Inicio de la máquina de estados
 				do {
 					switch (estado) {
-					case S_INIT:
+					case S_HELO:
 						// Se recibe el mensaje de bienvenida
 						break;
-					case S_USER:
+					case S_MAIL:
 						// establece la conexion de aplicacion 
 						printf("CLIENTE> Introduzca el usuario (enter para salir): ");
 						gets_s(input, sizeof(input));
@@ -137,7 +137,7 @@ int main(int* argc, char* argv[])
 							sprintf_s(buffer_out, sizeof(buffer_out), "%s %s%s", SC, input, CRLF);
 						}
 						break;
-					case S_PASS:
+					case S_RCPT:
 						printf("CLIENTE> Introduzca la clave (enter para salir): ");
 						gets_s(input, sizeof(input));
 						if (strlen(input) == 0) {
@@ -161,7 +161,7 @@ int main(int* argc, char* argv[])
 
 					}
 
-					if (estado != S_INIT) {
+					if (estado != S_HELO) {
 						enviados = send(sockfd, buffer_out, (int)strlen(buffer_out), 0);
 						if (enviados == SOCKET_ERROR) {
 							estado = S_QUIT;
@@ -185,15 +185,17 @@ int main(int* argc, char* argv[])
 					else {
 						buffer_in[recibidos] = 0x00;
 						printf(buffer_in);
-						if (estado != S_DATA && strncmp(buffer_in, OK, 2) == 0){
-							estado++;
-						}
-						//Si la autenticación no es correcta se vuelve al estado S_USER
-						if (estado == S_PASS && strncmp(buffer_in, OK, 2) != 0) {
-							estado = S_USER;
+						switch (estado) {
+						case S_HELO:
+							if (strncmp(buffer_in, "22", 2) == 0) {
+								estado++;
+							}
+						default:
+							if (strncmp(buffer_in, "25", 2) == 0) {
+								printf("Usuario no correcto in the house");
+							}
 						}
 					}
-
 				} while (estado != S_QUIT);
 			}
 			else {

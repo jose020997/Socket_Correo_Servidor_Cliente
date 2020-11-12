@@ -8,6 +8,10 @@
 #define MAIL "mail from:"
 #define SD  "quit"
 
+#define SC "USER"  
+#define PW "PASS"  
+#define ECHO "ECHO"
+
 
 
 // RESPUESTAS A COMANDOS DE APLICACION
