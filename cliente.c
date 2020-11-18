@@ -42,6 +42,7 @@ int main(int* argc, char* argv[])
 	char ipdest[256];
 	char default_ip4[16] = "127.0.0.1";
 	char default_ip6[64] = "::1";
+	char destino[60];
 
 	WORD wVersionRequested;
 	WSADATA wsaData;
@@ -125,29 +126,47 @@ int main(int* argc, char* argv[])
 					case S_HELO:
 						// Se recibe el mensaje de bienvenida
 						break;
-					case S_MAIL:
+
+					case S_START:
 						// establece la conexion de aplicacion 
-						printf("CLIENTE> Introduzca el usuario (enter para salir): ");
+						printf("SMTP> Introduzca el nombre del host: ");
 						gets_s(input, sizeof(input));
 						if (strlen(input) == 0) {
 							sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", SD, CRLF);
 							estado = S_QUIT;
 						}
 						else {
-							sprintf_s(buffer_out, sizeof(buffer_out), "%s %s%s", SC, input, CRLF);
+							sprintf_s(buffer_out, sizeof(buffer_out), "%s %s%s", HELO, input, CRLF);
 						}
-						break;
+						break; // hasta aqui deberia de funcionar bien
+
+					case S_MAIL: //meter esto en el .h
+						printf("Introducir el correo del remitente");
+						gets_s(input, sizeof(input));
+						strcpy_s(destino, sizeof(destino));
+						if (strlen(input) == 0) {
+							sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", SD, CRLF);
+							estado = S_QUIT;
+						}
+						sprintf_s(buffer_out, sizeof(buffer_out), "%s %s%s", MAIL, input, CRLF);
+						break; //el envio tendria que hacerse correctamente tambien
+
 					case S_RCPT:
-						printf("CLIENTE> Introduzca la clave (enter para salir): ");
+						printf("SMTP> Desde que correo le gustaria mandar el mensaje: ");
 						gets_s(input, sizeof(input));
 						if (strlen(input) == 0) {
 							sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", SD, CRLF);
 							estado = S_QUIT;
 						}
 						else
-							sprintf_s(buffer_out, sizeof(buffer_out), "%s %s%s", PW, input, CRLF);
-						break;
+							sprintf_s(buffer_out, sizeof(buffer_out), "%s %s%s", RCPT, input, CRLF);
+						break; //hasta aqui tambien tendria que estar correcto
+
 					case S_DATA:
+						sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", DATA, CRLF);
+						break;
+
+					case S_MENSA:// FALTA DECLARAR ESTE ESTADO TAMBIEN por aqui lo dejamos hoy
 						printf("CLIENTE> Introduzca datos (enter o QUIT para salir): ");
 						gets_s(input, sizeof(input));
 						if (strlen(input) == 0) {
@@ -189,7 +208,7 @@ int main(int* argc, char* argv[])
 						case S_HELO:
 							if (strncmp(buffer_in, "22", 2) == 0) {
 								estado++;
-							}
+							} //tenemos que añadir el resto de los estados
 						default:
 							if (strncmp(buffer_in, "25", 2) == 0) {
 								printf("Usuario no correcto in the house");
