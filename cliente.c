@@ -18,6 +18,7 @@
  * Alumno 2: David Antonio Barrios Garcia
  *
  ******************************************************/
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <stdio.h>		// Biblioteca estándar de entrada y salida
 #include <ws2tcpip.h>	// Necesaria para las funciones IPv6
 #include <conio.h>		// Biblioteca de entrada salida básica
@@ -163,6 +164,15 @@ int main(int* argc, char* argv[])
 						break; //hasta aqui tambien tendria que estar correcto
 
 					case S_DATA: //Meter el reset por si quiere borrar el mensaje
+						/*printf("CLIENTE> Introduzca datos (enter o QUIT para salir): ");
+						gets_s(input, sizeof(input));
+
+						if(strlen(input)==0){
+							sprintf_s (buffer_out, sizeof(buffer_out), "%s%s",SD,CRLF);
+							estado=S_QUIT;
+						}
+						else
+							sprintf_s (buffer_out, sizeof(buffer_out),"SUM 1 2%s",CRLF);*/
 						printf("Los datos son correctos¿?");
 						opcion = _getche();
 						if(opcion == 's' || opcione == 'S'){
@@ -176,6 +186,16 @@ int main(int* argc, char* argv[])
 
 					case S_MENSA:// FALTA DECLARAR ESTE ESTADO TAMBIEN por aqui lo dejamos hoy
 						//hacer una maquina de estados en la cual se recorra lo de emisor, receptor y el mensaje y comprobar que acabe en un punto con un condicional
+						recibir = 0;
+						printf("SMTP [Escribe un mensaje y pulse '.' para salir] ");
+						gets_s(input, sizeof(input));
+						strcpy_s(a, sizeof(a), input);
+							if (strcmp(input, ".") == 0) {
+								sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", input, CRLF);
+								recibir = 1;
+							}
+							else
+								sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", input, CRLF);
 						break;
 					case S_QUIT: //cerramos la maquina
 						break;
