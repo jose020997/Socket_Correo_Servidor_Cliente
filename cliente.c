@@ -164,15 +164,6 @@ int main(int* argc, char* argv[])
 						break; //hasta aqui tambien tendria que estar correcto
 
 					case S_DATA: //Meter el reset por si quiere borrar el mensaje
-						/*printf("CLIENTE> Introduzca datos (enter o QUIT para salir): ");
-						gets_s(input, sizeof(input));
-
-						if(strlen(input)==0){
-							sprintf_s (buffer_out, sizeof(buffer_out), "%s%s",SD,CRLF);
-							estado=S_QUIT;
-						}
-						else
-							sprintf_s (buffer_out, sizeof(buffer_out),"SUM 1 2%s",CRLF);*/
 						printf("Los datos son correctos¿?");
 						opcion = _getche();
 						if(opcion == 's' || opcione == 'S'){
@@ -197,8 +188,6 @@ int main(int* argc, char* argv[])
 							else
 								sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", input, CRLF);
 						break;
-					case S_QUIT: //cerramos la maquina
-						break;
 
 					}
 
@@ -210,7 +199,7 @@ int main(int* argc, char* argv[])
 									 // bucle salte hasta la comprobación del mismo.
 						}
 					}
-					if(estado!= S_MSG){
+			if(recibir == 1){ //comprobamos si ha metido el . sino se repite lo del mensaje
 					recibidos = recv(sockfd, buffer_in, 512, 0);
 					if (recibidos <= 0) {
 						DWORD error = GetLastError();
@@ -231,16 +220,20 @@ int main(int* argc, char* argv[])
 							if (strncmp(buffer_in, "22", 2) == 0) {
 								estado++;
 							} //tenemos que añadir el resto de los estados
-						case S_Mail:
-							if(strcmp(buffer_in ,  "25",2)==0){
+						case S_START:
+							if(strcmp(buffer_in , "25",2)==0){
 							estado ++;
 							}
+
 						default:
 							if (strncmp(buffer_in, "25", 2) == 0) {
 								printf("Usuario no correcto in the house");
+								estado ++;
 							}
+							break;
 						}
-					}
+						}
+				} //final del if recibir == 1;
 				} while (estado != S_QUIT);
 			}
 			else {
