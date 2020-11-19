@@ -43,7 +43,8 @@ int main(int* argc, char* argv[])
 	char ipdest[256];
 	char default_ip4[16] = "127.0.0.1";
 	char default_ip6[64] = "::1";
-	char destino[60];
+	char destino[60], emisor[60];
+	char  a[1000];
 
 	WORD wVersionRequested;
 	WSADATA wsaData;
@@ -141,10 +142,10 @@ int main(int* argc, char* argv[])
 						}
 						break; // hasta aqui deberia de funcionar bien
 
-					case S_MAIL: //meter esto en el .h
+					case S_MAIL: //meter esto en el .h tambien se puede poner un reset aqui
 						printf("Introducir el correo del remitente");
 						gets_s(input, sizeof(input));
-						strcpy_s(destino, sizeof(destino));
+						strcpy_s(emisor, sizeof(emisor),input);//cargamos los datos por si luego el usuario quiere no introducir de nuevo
 						if (strlen(input) == 0) {
 							sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", SD, CRLF);
 							estado = S_QUIT;
@@ -155,6 +156,7 @@ int main(int* argc, char* argv[])
 					case S_RCPT:
 						printf("SMTP> Desde que correo le gustaria mandar el mensaje: ");
 						gets_s(input, sizeof(input));
+						strcpy_s(destino, sizeof(destino),input);
 						if (strlen(input) == 0) {
 							sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", SD, CRLF);
 							estado = S_QUIT;
@@ -164,6 +166,7 @@ int main(int* argc, char* argv[])
 						break; //hasta aqui tambien tendria que estar correcto
 
 					case S_DATA: //Meter el reset por si quiere borrar el mensaje
+						cabecera = 0;
 						printf("Los datos son correctos¿?");
 						opcion = _getche();
 						if(opcion == 's' || opcione == 'S'){
@@ -171,22 +174,43 @@ int main(int* argc, char* argv[])
 						}
 						else{
 							sprintf(buffer_out, sizeof(buffer_out,"%s%s",RESET,CRLF)
-							estado = S_HELO
+							estado = S_HELO;
 						}
 						break;
 
 					case S_MENSA:// FALTA DECLARAR ESTE ESTADO TAMBIEN por aqui lo dejamos hoy
 						//hacer una maquina de estados en la cual se recorra lo de emisor, receptor y el mensaje y comprobar que acabe en un punto con un condicional
-						recibir = 0;
-						printf("SMTP [Escribe un mensaje y pulse '.' para salir] ");
-						gets_s(input, sizeof(input));
-						strcpy_s(a, sizeof(a), input);
-							if (strcmp(input, ".") == 0) {
-								sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", input, CRLF);
-								recibir = 1;
-							}
-							else
-								sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", input, CRLF);
+						switch(cabecera) //realizado en clase
+						case 0:
+							printf("Introducir un asunto");
+							gets_s(input,sizeof(input));
+							sprintf(buffer_out,sizeof(buffer_out),"Subject : %s",input);
+							cabecera++;
+							break;
+						case 1:
+							printf("Introduce un emisor");
+							gets_s(input,sizeof(input));
+							sprintf(buffer_out,sizeof(buffer_out),"From : %s %s",emisor,input); //mandamos por defecto el que hemos cargado arriba + el que quiera añadir
+							cabecera ++;
+							break;
+						case 2:
+							printf("Introduce un receptor");
+							gets_s(input,sizeof(input));
+							sprintf(buffer_out,sizeof(buffer_out),"To : %s %s",destino,input); //mandamos por defecto el que hemos cargado arrib + alguno mas
+							cabecera++;
+							break;
+						case 3:
+							recibir = 0;
+							printf("SMTP [Escribe un mensaje y pulse '.' para salir] ");
+							gets_s(input, sizeof(input));
+							strcpy_s(a, sizeof(a), input); //por si los necesitamos mas adelante los guardamos tambien
+								if (strcmp(input, ".") == 0) {
+									sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", input, CRLF);
+									recibir = 1;
+								}
+								else
+									sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", input, CRLF);
+							break;
 						break;
 
 					}
