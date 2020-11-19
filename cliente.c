@@ -248,7 +248,13 @@ int main(int* argc, char* argv[])
 							if(strcmp(buffer_in , "25",2)==0){
 							estado ++;
 							}
-
+						case S_RCPT:
+							if (strncmp(buffer_in, "25", 3) == 0) {
+								estdo++;
+							}
+						case S_DATA:
+							estado++;
+							break;
 						default:
 							if (strncmp(buffer_in, "25", 2) == 0) {
 								printf("Usuario no correcto in the house");
