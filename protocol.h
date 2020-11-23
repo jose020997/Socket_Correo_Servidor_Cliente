@@ -8,6 +8,7 @@
 #define MAIL "mail from:"
 #define SD  "quit"
 #define DATA "data"
+#define RESET "reset"
 
 
 
@@ -31,7 +32,8 @@
 #define S_RCPT 3
 #define S_DATA 4
 #define S_MENSA 5
-#define S_QUIT 6
+#define S_FINAL 6
+#define S_QUIT 7
 
 
 //PUERTO DEL SERVICIO
