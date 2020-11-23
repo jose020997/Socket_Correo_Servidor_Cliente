@@ -133,7 +133,7 @@ int main(int* argc, char* argv[])
 
 					case S_START:
 						// establece la conexion de aplicacion 
-						printf("SMTP> Introduzca el nombre del host: ");
+						printf("SMTP> Introduzca el nombre del host: "); // si no pones nada te da un fallo seria como poner enter y que vaya canelita
 						gets_s(input, sizeof(input));
 						if (strlen(input) == 0) {
 							sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", SD, CRLF);
@@ -169,13 +169,13 @@ int main(int* argc, char* argv[])
 
 					case S_DATA: //Meter el reset por si quiere borrar el mensaje
 						cabecera = 0;
-						printf("Los datos son correctos¿? : ");
+						printf("Los datos son correctos¿? : "); // aqui da problemas si no pones un S tenemos que cambiar solo eso por ahora
 						opcion = _getche();
 						if(opcion == 's' || opcion == 'S'){
 							sprintf_s(buffer_out,sizeof(buffer_out),"%s%s",DATA, CRLF);
 						}
 						else{
-	//						sprintf(buffer_out, sizeof(buffer_out, "%s%s", RESET, CRLF);
+							sprintf_s(buffer_out, sizeof(buffer_out), "%s%s",RESET, CRLF);
 							estado = S_HELO;
 						}
 						break;
@@ -248,27 +248,25 @@ int main(int* argc, char* argv[])
 							} //tenemos que añadir el resto de los estados
 							break;
 						case S_START:
-							if(strcmp(buffer_in ,"250", 3) == 0){
+							if(strncmp(buffer_in , "250", 3) == 0){
 								estado = S_MAIL;
 							}
 							else {
-								estado = S_MAIL; //tenemos un fallo aqui me cago en diooo
 							}
 							break;
 						case S_MAIL:
-							if (strncmp(buffer_in, "25", 2) == 0) {
-							estado=S_RCPT;
-							}
+							if (strncmp(buffer_in, "250", 3) == 0) {
 							estado = S_RCPT;
+							}
 							break;
 						case S_RCPT:
-							if (strncmp(buffer_in, "25", 2) == 0) {
+							if (strncmp(buffer_in, "250", 3) == 0) {
 								estado = S_DATA;
 							}
-							estado = S_DATA;
+							printf("fallo");
 							break;
 						case S_DATA:
-							estado=S_MENSA;
+							estado = S_MENSA;
 							break;
 						case S_FINAL:
 							printf("Quiere mandar otro mensaje: [s/n] ");
@@ -280,9 +278,7 @@ int main(int* argc, char* argv[])
 								estado = S_QUIT;
 							}
 						default:
-							if (strncmp(buffer_in, "25", 2) == 0) {
-								estado ++;
-							}
+							estado = S_QUIT;
 							break;
 						}
 						}
@@ -303,4 +299,5 @@ int main(int* argc, char* argv[])
 	} while (option != 'n' && option != 'N');
 
 	return(0);
+
 }
