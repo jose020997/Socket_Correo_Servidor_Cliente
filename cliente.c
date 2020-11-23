@@ -37,8 +37,9 @@ int main(int* argc, char* argv[])
 	int address_size = sizeof(server_in4);
 	char buffer_in[1024], buffer_out[1024], input[1024];
 	int recibidos = 0, enviados = 0;
-	int estado;
-	char option;
+	int estado,recibir = 1;
+	int cabecera = 0;
+	char opcion,option;
 	int ipversion = AF_INET;//IPv4 por defecto
 	char ipdest[256];
 	char default_ip4[16] = "127.0.0.1";
@@ -143,7 +144,7 @@ int main(int* argc, char* argv[])
 						break; // hasta aqui deberia de funcionar bien
 
 					case S_MAIL: //meter esto en el .h tambien se puede poner un reset aqui
-						printf("Introducir el correo del remitente");
+						printf("Introducir el correo del remitente : ");
 						gets_s(input, sizeof(input));
 						strcpy_s(emisor, sizeof(emisor),input);//cargamos los datos por si luego el usuario quiere no introducir de nuevo
 						if (strlen(input) == 0) {
@@ -167,50 +168,50 @@ int main(int* argc, char* argv[])
 
 					case S_DATA: //Meter el reset por si quiere borrar el mensaje
 						cabecera = 0;
-						printf("Los datos son correctos¿?");
+						printf("Los datos son correctos¿? : ");
 						opcion = _getche();
-						if(opcion == 's' || opcione == 'S'){
-							sprintf_s(bufferout,sizeof(bufferout),"%s%s" DATA, CRLF);
+						if(opcion == 's' || opcion == 'S'){
+							sprintf_s(buffer_out,sizeof(buffer_out),"%s%s" DATA, CRLF);
 						}
 						else{
-							sprintf(buffer_out, sizeof(buffer_out,"%s%s",RESET,CRLF)
+	//						sprintf(buffer_out, sizeof(buffer_out, "%s%s", RESET, CRLF);
 							estado = S_HELO;
 						}
 						break;
 
 					case S_MENSA:// FALTA DECLARAR ESTE ESTADO TAMBIEN por aqui lo dejamos hoy
 						//hacer una maquina de estados en la cual se recorra lo de emisor, receptor y el mensaje y comprobar que acabe en un punto con un condicional
-						switch(cabecera) //realizado en clase
+						switch (cabecera) { //realizado en clase
 						case 0:
-							printf("Introducir un asunto");
-							gets_s(input,sizeof(input));
-							sprintf(buffer_out,sizeof(buffer_out),"Subject : %s",input);
+							printf("Introducir un asunto : ");
+							gets_s(input, sizeof(input));
+							sprintf_s(buffer_out, sizeof(buffer_out), "Subject : %s", input);
 							cabecera++;
 							break;
 						case 1:
-							printf("Introduce un emisor");
-							gets_s(input,sizeof(input));
-							sprintf(buffer_out,sizeof(buffer_out),"From : %s %s",emisor,input); //mandamos por defecto el que hemos cargado arriba + el que quiera añadir
-							cabecera ++;
+							printf("Introduce un emisor : ");
+							gets_s(input, sizeof(input));
+							sprintf_s(buffer_out, sizeof(buffer_out), "From : %s %s", emisor, input); //mandamos por defecto el que hemos cargado arriba + el que quiera añadir
+							cabecera++;
 							break;
 						case 2:
-							printf("Introduce un receptor");
-							gets_s(input,sizeof(input));
-							sprintf(buffer_out,sizeof(buffer_out),"To : %s %s",destino,input); //mandamos por defecto el que hemos cargado arrib + alguno mas
+							printf("Introduce un receptor : ");
+							gets_s(input, sizeof(input));
+							sprintf_s(buffer_out, sizeof(buffer_out), "To : %s %s", destino, input); //mandamos por defecto el que hemos cargado arrib + alguno mas
 							cabecera++;
 							break;
 						case 3:
-							recibir = 0;
-							printf("SMTP [Escribe un mensaje y pulse '.' para salir] ");
+							printf("SMTP [Escribe un mensaje y pulse '.' para salir]  : ");
 							gets_s(input, sizeof(input));
 							strcpy_s(a, sizeof(a), input); //por si los necesitamos mas adelante los guardamos tambien
-								if (strcmp(input, ".") == 0) {
-									sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", input, CRLF);
-									recibir = 1;
-								}
-								else
-									sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", input, CRLF);
+							if (strcmp(input, ".") == 0) {
+								sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", input, CRLF);
+								estado = S_FINAL;
+							}
+							else
+								sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", input, CRLF);
 							break;
+						}
 						break;
 
 					}
@@ -223,7 +224,8 @@ int main(int* argc, char* argv[])
 									 // bucle salte hasta la comprobación del mismo.
 						}
 					}
-			if(recibir == 1){ //comprobamos si ha metido el . sino se repite lo del mensaje
+					if(estado != S_MENSA){
+				//if(recibir == 1){ //comprobamos si ha metido el . sino se repite lo del mensaje
 					recibidos = recv(sockfd, buffer_in, 512, 0);
 					if (recibidos <= 0) {
 						DWORD error = GetLastError();
@@ -242,22 +244,34 @@ int main(int* argc, char* argv[])
 						switch (estado) {
 						case S_HELO:
 							if (strncmp(buffer_in, "22", 2) == 0) {
-								estado++;
+								estado = S_START;
 							} //tenemos que añadir el resto de los estados
+							break;
 						case S_START:
-							if(strcmp(buffer_in , "25",2)==0){
-							estado ++;
+							if(strcmp(buffer_in ,"250", 3) == 0){
+								estado = S_MAIL;
 							}
+							else {
+								estado = S_MAIL; //tenemos un fallo aqui me cago en diooo
+							}
+							break;
+						case S_MAIL:
+							if (strncmp(buffer_in, "25", 2) == 0) {
+							estado=S_RCPT;
+							}
+							estado = S_RCPT;
+							break;
 						case S_RCPT:
-							if (strncmp(buffer_in, "25", 3) == 0) {
-								estdo++;
+							if (strncmp(buffer_in, "25", 2) == 0) {
+								estado = S_DATA;
 							}
+							estado = S_DATA;
+							break;
 						case S_DATA:
-							estado++;
+							estado=S_MENSA;
 							break;
 						default:
 							if (strncmp(buffer_in, "25", 2) == 0) {
-								printf("Usuario no correcto in the house");
 								estado ++;
 							}
 							break;
