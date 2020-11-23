@@ -8,7 +8,7 @@
 #define MAIL "mail from:"
 #define SD  "quit"
 #define DATA "data"
-#define RESET "reset"
+#define RESET "rset"
 
 
 
