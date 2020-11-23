@@ -39,7 +39,8 @@ int main(int* argc, char* argv[])
 	int recibidos = 0, enviados = 0;
 	int estado,recibir = 1;
 	int cabecera = 0;
-	char opcion,option;
+	char option;
+	char opcion;
 	int ipversion = AF_INET;//IPv4 por defecto
 	char ipdest[256];
 	char default_ip4[16] = "127.0.0.1";
@@ -171,7 +172,7 @@ int main(int* argc, char* argv[])
 						printf("Los datos son correctos¿? : ");
 						opcion = _getche();
 						if(opcion == 's' || opcion == 'S'){
-							sprintf_s(buffer_out,sizeof(buffer_out),"%s%s" DATA, CRLF);
+							sprintf_s(buffer_out,sizeof(buffer_out),"%s%s",DATA, CRLF);
 						}
 						else{
 	//						sprintf(buffer_out, sizeof(buffer_out, "%s%s", RESET, CRLF);
@@ -185,19 +186,19 @@ int main(int* argc, char* argv[])
 						case 0:
 							printf("Introducir un asunto : ");
 							gets_s(input, sizeof(input));
-							sprintf_s(buffer_out, sizeof(buffer_out), "Subject : %s", input);
+							sprintf_s(buffer_out, sizeof(buffer_out), "Subject : %s %s", input,CRLF);
 							cabecera++;
 							break;
 						case 1:
 							printf("Introduce un emisor : ");
 							gets_s(input, sizeof(input));
-							sprintf_s(buffer_out, sizeof(buffer_out), "From : %s %s", emisor, input); //mandamos por defecto el que hemos cargado arriba + el que quiera añadir
+							sprintf_s(buffer_out, sizeof(buffer_out), "From : %s %s %s", emisor, input,CRLF); //mandamos por defecto el que hemos cargado arriba + el que quiera añadir
 							cabecera++;
 							break;
 						case 2:
 							printf("Introduce un receptor : ");
 							gets_s(input, sizeof(input));
-							sprintf_s(buffer_out, sizeof(buffer_out), "To : %s %s", destino, input); //mandamos por defecto el que hemos cargado arrib + alguno mas
+							sprintf_s(buffer_out, sizeof(buffer_out), "To : %s %s %s", destino, input,CRLF); //mandamos por defecto el que hemos cargado arrib + alguno mas
 							cabecera++;
 							break;
 						case 3:
@@ -206,13 +207,12 @@ int main(int* argc, char* argv[])
 							strcpy_s(a, sizeof(a), input); //por si los necesitamos mas adelante los guardamos tambien
 							if (strcmp(input, ".") == 0) {
 								sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", input, CRLF);
-								estado = S_FINAL;
+								estado = S_FINAL; // cambiar estado por el nuevo
 							}
 							else
 								sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", input, CRLF);
 							break;
 						}
-						break;
 
 					}
 
@@ -239,7 +239,7 @@ int main(int* argc, char* argv[])
 						}
 					}
 					else {
-						buffer_in[recibidos] = 0x00;
+						buffer_in[recibidos] = 0x00; // en s char se llena el buffer
 						printf(buffer_in);
 						switch (estado) {
 						case S_HELO:
@@ -270,6 +270,15 @@ int main(int* argc, char* argv[])
 						case S_DATA:
 							estado=S_MENSA;
 							break;
+						case S_FINAL:
+							printf("Quiere mandar otro mensaje: [s/n] ");
+							gets_s(input, sizeof(input));
+							if (strcmp(input, "s") == 0) {
+								estado = S_MAIL;
+							}
+							else {
+								estado = S_QUIT;
+							}
 						default:
 							if (strncmp(buffer_in, "25", 2) == 0) {
 								estado ++;
@@ -288,6 +297,7 @@ int main(int* argc, char* argv[])
 
 		}
 		printf("-----------------------\r\n\r\nCLIENTE> Volver a conectar (S/N)\r\n");
+
 		option = _getche();
 
 	} while (option != 'n' && option != 'N');
