@@ -118,7 +118,7 @@ int main(int* argc, char* argv[])
 				address_size = sizeof(server_in6);
 			}
 
-			//Cada nueva conexión establece el estado incial en
+			//Cada nueva conexión establece el estado incial en HELO
 			estado = S_HELO;
 
 			if (connect(sockfd, server_in, address_size) == 0) {
@@ -132,9 +132,12 @@ int main(int* argc, char* argv[])
 						break;
 
 					case S_START:
-						// establece la conexion de aplicacion 
-						printf("SMTP> Introduzca el nombre del host: "); // si no pones nada te da un fallo seria como poner enter y que vaya canelita
+						// establece la conexion
+						printf("Introduzca el nombre del host: "); // si no pones nada te da un fallo seria como poner enter y que vaya canelita
 						gets_s(input, sizeof(input));
+						if (input==""){
+							printf("La cadena se encuentra vacia"); //controlar cadena vacia			
+						}
 						if (strlen(input) == 0) {
 							sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", SD, CRLF);
 							estado = S_QUIT;
@@ -147,7 +150,7 @@ int main(int* argc, char* argv[])
 					case S_MAIL: //meter esto en el .h tambien se puede poner un reset aqui
 						printf("Introducir el correo del remitente : ");
 						gets_s(input, sizeof(input));
-						strcpy_s(emisor, sizeof(emisor),input);//cargamos los datos por si luego el usuario quiere no introducir de nuevo
+						strcpy_s(emisor, sizeof(emisor),input); //cargamos los datos por si luego el usuario quiere no introducir de nuevo
 						if (strlen(input) == 0) {
 							sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", SD, CRLF);
 							estado = S_QUIT;
@@ -169,7 +172,7 @@ int main(int* argc, char* argv[])
 
 					case S_DATA: //Meter el reset por si quiere borrar el mensaje
 						cabecera = 0;
-						printf("Los datos son correctos¿? : "); // aqui da problemas si no pones un S tenemos que cambiar solo eso por ahora
+						printf("Los datos son correctos? : "); // aqui da problemas si no pones un S tenemos que cambiar solo eso por ahora
 						opcion = _getche();
 						if(opcion == 's' || opcion == 'S'){
 							sprintf_s(buffer_out,sizeof(buffer_out),"%s%s",DATA, CRLF);
@@ -180,8 +183,7 @@ int main(int* argc, char* argv[])
 						}
 						break;
 
-					case S_MENSA:// FALTA DECLARAR ESTE ESTADO TAMBIEN por aqui lo dejamos hoy
-						//hacer una maquina de estados en la cual se recorra lo de emisor, receptor y el mensaje y comprobar que acabe en un punto con un condicional
+					case S_MENSA:
 						switch (cabecera) { //realizado en clase
 						case 0:
 							printf("Introducir un asunto : ");
@@ -202,7 +204,7 @@ int main(int* argc, char* argv[])
 							cabecera++;
 							break;
 						case 3:
-							printf("SMTP [Escribe un mensaje y pulse '.' para salir]  : ");
+							printf("Escribe un mensaje y pulse '.' para salir : ");
 							gets_s(input, sizeof(input));
 							strcpy_s(a, sizeof(a), input); //por si los necesitamos mas adelante los guardamos tambien
 							if (strcmp(input, ".") == 0) {
@@ -263,7 +265,6 @@ int main(int* argc, char* argv[])
 							if (strncmp(buffer_in, "250", 3) == 0) {
 								estado = S_DATA;
 							}
-							printf("fallo");
 							break;
 						case S_DATA:
 							estado = S_MENSA;
