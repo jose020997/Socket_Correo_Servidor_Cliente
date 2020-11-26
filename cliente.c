@@ -46,7 +46,9 @@ int main(int* argc, char* argv[])
 	char default_ip4[16] = "127.0.0.1";
 	char default_ip6[64] = "::1";
 	char destino[60], emisor[60];
-	char  a[1000];
+	char  a[9000];
+	int comp,z;
+	
 
 	WORD wVersionRequested;
 	WSADATA wsaData;
@@ -136,7 +138,8 @@ int main(int* argc, char* argv[])
 						printf("Introduzca el nombre del host: "); // si no pones nada te da un fallo seria como poner enter y que vaya canelita
 						gets_s(input, sizeof(input));
 						if (input==""){
-							printf("La cadena se encuentra vacia"); //controlar cadena vacia			
+							printf("La cadena se encuentra vacia"); //controlar cadena vacia
+							// pendiente cambios 	
 						}
 						if (strlen(input) == 0) {
 							sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", SD, CRLF);
@@ -204,15 +207,28 @@ int main(int* argc, char* argv[])
 							cabecera++;
 							break;
 						case 3:
-							printf("Escribe un mensaje y pulse '.' para salir : ");
-							gets_s(input, sizeof(input));
-							strcpy_s(a, sizeof(a), input); //por si los necesitamos mas adelante los guardamos tambien
-							if (strcmp(input, ".") == 0) {
-								sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", input, CRLF);
-								estado = S_FINAL; // cambiar estado por el nuevo
-							}
-							else
-								sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", input, CRLF);
+							int es=0;
+							do{
+								printf("Escribe un mensaje y pulse '.' para salir : ");
+								gets_s(input, sizeof(input));
+								strcpy_s(a, sizeof(a), input); //por si los necesitamos mas adelante los guardamos tambien
+								z=strlen(a);
+									if(z>10){
+										printf("Cadena no cumple los requisitos\r\n");
+										es=1; // hacemos un bucle do while para que cumpla las condiciones
+									}
+									else{
+										if (strcmp(input, ".") == 0) {
+											sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", input, CRLF);
+											estado = S_FINAL; // cambiar estado por el nuevo
+											es=0;
+										}
+										else
+											sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", input, CRLF);
+											es=0;
+										}
+									}	
+							while(es==1);
 							break;
 						}
 
@@ -227,7 +243,7 @@ int main(int* argc, char* argv[])
 						}
 					}
 					if(estado != S_MENSA){
-				//if(recibir == 1){ //comprobamos si ha metido el . sino se repite lo del mensaje
+				 //comprobamos si ha metido el . sino se repite lo del mensaje
 					recibidos = recv(sockfd, buffer_in, 512, 0);
 					if (recibidos <= 0) {
 						DWORD error = GetLastError();
@@ -278,6 +294,7 @@ int main(int* argc, char* argv[])
 							else {
 								estado = S_QUIT;
 							}
+							break;
 						default:
 							estado = S_QUIT;
 							break;
