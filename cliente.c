@@ -175,14 +175,15 @@ int main(int* argc, char* argv[])
 
 					case S_DATA: //Meter el reset por si quiere borrar el mensaje
 						cabecera = 0;
-						printf("Los datos son correctos? : "); // aqui da problemas si no pones un S tenemos que cambiar solo eso por ahora
+						printf("Los datos son correctos? : \r\n"); // aqui da problemas si no pones un S tenemos que cambiar solo eso por ahora
 						opcion = _getche();
+						printf("\r\n");
 						if(opcion == 's' || opcion == 'S'){
 							sprintf_s(buffer_out,sizeof(buffer_out),"%s%s",DATA, CRLF);
 						}
 						else{
 							sprintf_s(buffer_out, sizeof(buffer_out), "%s%s",RESET, CRLF);
-							estado = S_HELO;
+							estado = S_START;
 						}
 						break;
 
